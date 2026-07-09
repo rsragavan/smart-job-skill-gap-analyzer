@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="45668ef2-3c01-4690-ac8b-a20e6ec86ab7" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/smart-job-skill-gap-analyzer.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/_init_.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/database/_init_.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/database/database.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/_init_.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/job.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/requirements.txt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="18" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/app/main.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="3.188566743411361E-43" />
+      <entry key="MS500" value="3.1676414558154897E-9" />
+      <entry key="S2" value="0.008094710071603617" />
+      <entry key="S5" value="0.1924598428138619" />
+      <entry key="S10" value="0.6021044547494969" />
+      <entry key="S30" value="1.3310129271078799" />
+      <entry key="S60" value="1.6303345065396426" />
+      <entry key="M2" value="1.829152835865954" />
+      <entry key="M5" value="2.4657037874257557" />
+      <entry key="M10" value="3.88451479692823" />
+      <entry key="M15" value="5.1515611039082465" />
+      <entry key="M30" value="7.864486506054159" />
+      <entry key="H1" value="11.006587274681559" />
+      <entry key="H2" value="13.950964453212443" />
+      <entry key="H4" value="16.114391195485066" />
+      <entry key="D1" value="18.45722937050321" />
+      <entry key="W1" value="18.920764400452768" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="1.0000022998959115" />
+      <entry key="MS500" value="1.0746495374788214" />
+      <entry key="S2" value="1.6563713764733876" />
+      <entry key="S5" value="2.4212727883864633" />
+      <entry key="S10" value="3.0097093757919042" />
+      <entry key="S30" value="3.608921215980034" />
+      <entry key="S60" value="3.7954954300433403" />
+      <entry key="M2" value="3.8973577973849194" />
+      <entry key="M5" value="4.123598437491561" />
+      <entry key="M10" value="4.881565166309712" />
+      <entry key="M15" value="5.728415683783358" />
+      <entry key="M30" value="7.7295155308696035" />
+      <entry key="H1" value="9.853173545728245" />
+      <entry key="H2" value="11.543832104252552" />
+      <entry key="H4" value="12.650030032244075" />
+      <entry key="D1" value="13.755084734768703" />
+      <entry key="W1" value="13.964478439678427" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="2.3000735915375833E-6" />
+      <entry key="MS500" value="0.08577203271136141" />
+      <entry key="S2" value="0.9406870862949236" />
+      <entry key="S5" value="2.1274779800687575" />
+      <entry key="S10" value="3.287401710541807" />
+      <entry key="S30" value="4.801425306895812" />
+      <entry key="S60" value="5.351552185665947" />
+      <entry key="M2" value="5.687927056975939" />
+      <entry key="M5" value="6.571503954929936" />
+      <entry key="M10" value="8.752848799452442" />
+      <entry key="M15" value="10.868057456917676" />
+      <entry key="M30" value="15.584603225639224" />
+      <entry key="H1" value="20.85331882223623" />
+      <entry key="H2" value="25.490890857074458" />
+      <entry key="H4" value="28.76224455157736" />
+      <entry key="D1" value="32.21191399034963" />
+      <entry key="W1" value="32.885184668583896" />
+    </decayedShown>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3G82dCnsgT4wmAz1SZxiVp0hMUL" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.database.executor": "Run",
+    "Python.main.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/rsrag/PycharmProjects/smart-job-skill-gap-analyzer/app/database",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "GitIgnore"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\rsrag\PycharmProjects\smart-job-skill-gap-analyzer\app\database" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\rsrag\PycharmProjects\smart-job-skill-gap-analyzer" />
+      <recent name="C:\Users\rsrag\PycharmProjects\smart-job-skill-gap-analyzer\app" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-c59985aa861c-c2ffad84badb-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.24374.152" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="45668ef2-3c01-4690-ac8b-a20e6ec86ab7" name="Changes" comment="" />
+      <created>1783338960969</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1783338960969</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
