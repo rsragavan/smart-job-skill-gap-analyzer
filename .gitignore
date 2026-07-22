@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+uploads/
+frontend/node_modules/
+frontend/dist/
+frontend/.vercel/
+frontend/build_output.txt
+frontend/final_build.txt
+.idea/
