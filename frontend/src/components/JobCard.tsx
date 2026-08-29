@@ -11,6 +11,10 @@ import {
 import LaunchIcon from "@mui/icons-material/Launch";
 import WorkIcon from "@mui/icons-material/Work";
 
+import { Snackbar, Alert } from "@mui/material";
+import { useState } from "react";
+import { isAxiosError } from "axios";
+import applicationService from "../services/applicationService";
 import type { Job } from "../types/job";
 
 interface Props {
@@ -33,8 +37,55 @@ function isValidChipValue(value: string | null | undefined): value is string {
 export default function JobCard({ job, isSelected = false, onSelect }: Props) {
     const matchedSkills = job.matched_skills.filter(isValidChipValue);
     const missingSkills = job.missing_skills.filter(isValidChipValue);
+    const [applying, setApplying] = useState(false);
+const [applied, setApplied] = useState(false);
 
+const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+});
+
+const applyForJob = async () => {
+    try {
+        setApplying(true);
+
+        await applicationService.applyForJob(job.id);
+
+        setApplied(true);
+
+        setSnackbar({
+            open: true,
+            message: "Application submitted successfully.",
+            severity: "success",
+        });
+
+    } catch (error: unknown) {
+
+        if (isAxiosError(error) && error.response?.status === 400) {
+            setApplied(true);
+
+            setSnackbar({
+                open: true,
+                message: "You have already applied for this job.",
+                severity: "error",
+            });
+        } else {
+
+            setSnackbar({
+                open: true,
+                message: "Failed to apply.",
+                severity: "error",
+            });
+
+        }
+
+    } finally {
+        setApplying(false);
+    }
+};
     return (
+        <>
         <Card
             elevation={3}
             sx={{
@@ -169,18 +220,49 @@ export default function JobCard({ job, isSelected = false, onSelect }: Props) {
                         </Button>
                     )}
                     <Button
-                        variant="contained"
-                        endIcon={<LaunchIcon />}
-                        href={job.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        disabled={!job.url}
-                    >
-                        View Job
-                    </Button>
+    variant="contained"
+    color={applied ? "success" : "primary"}
+    disabled={applying || applied}
+    onClick={applyForJob}
+>
+    {applying
+        ? "Applying..."
+        : applied
+        ? "Applied"
+        : "Apply"}
+</Button>
+
+<Button
+    variant="outlined"
+    endIcon={<LaunchIcon />}
+    href={job.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    disabled={!job.url}
+>
+    View Job
+</Button>
                 </Box>
 
             </CardContent>
         </Card>
+        <Snackbar
+    open={snackbar.open}
+    autoHideDuration={3000}
+    onClose={() =>
+        setSnackbar({
+            ...snackbar,
+            open: false,
+        })
+    }
+>
+    <Alert
+        severity={snackbar.severity}
+        variant="filled"
+    >
+        {snackbar.message}
+    </Alert>
+</Snackbar>
+    </>
     );
 }

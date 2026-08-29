@@ -1,6 +1,6 @@
 from app.db.database import SessionLocal
 from app.jobs.job_skill_extractor import JobSkillExtractor
-from app.learning.roadmap_generator import RoadmapGenerator
+from app.roadmap.roadmap_generator import RoadmapGenerator
 from app.repositories.job_repository import JobRepository
 from app.models.job import JobStatus
 from app.repositories.resume_history_repository import ResumeHistoryRepository

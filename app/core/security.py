@@ -19,6 +19,16 @@ bearer_scheme = HTTPBearer(auto_error=False)
 def validate_password(password: str) -> None:
     if len(password) < 8 or len(password) > 128:
         raise HTTPException(422, "Password must be between 8 and 128 characters.")
+    if (
+        not any(character.isupper() for character in password)
+        or not any(character.islower() for character in password)
+        or not any(character.isdigit() for character in password)
+        or not any(not character.isalnum() for character in password)
+    ):
+        raise HTTPException(
+            422,
+            "Password must include uppercase, lowercase, number, and special character.",
+        )
 
 
 def hash_password(password: str) -> str:

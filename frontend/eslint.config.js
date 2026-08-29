@@ -22,6 +22,9 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
       'react-hooks/set-state-in-effect': 'off',
       'react-hooks/exhaustive-deps': 'off',
+      // Legacy API payloads still contain a few untyped provider-specific fields.
+      // Runtime boundaries validate them before they are rendered.
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
 ])

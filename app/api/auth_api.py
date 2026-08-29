@@ -13,6 +13,7 @@ from app.core.security import create_token, decode_token, get_current_user, hash
 from app.db.database import get_db
 from app.models.auth import PasswordResetToken, RefreshToken
 from app.models.user import Role, User
+from app.models.admin import AdminActivityLog
 from app.services.email_service import send_password_reset_email
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -145,6 +146,7 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Account is deactivated")
 
     user.last_login = datetime.now(UTC)
+    db.add(AdminActivityLog(admin_user_id=user.id if user.role == Role.ADMIN else None, action="login", resource="auth", detail=f"user:{user.id}"))
     result = tokens_for(db, user)
     db.commit()
     return result

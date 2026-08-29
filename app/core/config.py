@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,7 +13,6 @@ class Settings(BaseSettings):
     # ===========================
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
-    ENABLE_JOB_SCHEDULER: bool = False
 
     # ===========================
     # JWT
@@ -33,6 +33,12 @@ class Settings(BaseSettings):
     FRONTEND_URL: str
     BACKEND_URL: str
 
+    # The API never executes learner code. This URL points to a separately
+    # deployed sandbox runner (for example, a gVisor/Firecracker service).
+    EXECUTION_SERVICE_URL: str = ""
+    EXECUTION_SERVICE_TOKEN: str = ""
+    EXECUTION_SERVICE_TIMEOUT_SECONDS: float = 8.0
+
     # Gmail SMTP (use a Gmail App Password, never the account password)
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
@@ -44,6 +50,14 @@ class Settings(BaseSettings):
     # CORS
     # ===========================
     CORS_ORIGINS: str
+
+    @field_validator("CORS_ORIGINS")
+    @classmethod
+    def validate_cors_origins(cls, value: str) -> str:
+        origins = [origin.strip() for origin in value.split(",") if origin.strip()]
+        if not origins or "*" in origins:
+            raise ValueError("CORS_ORIGINS must contain explicit origins and cannot use '*'.")
+        return ",".join(origins)
 
     # ===========================
     model_config = SettingsConfigDict(

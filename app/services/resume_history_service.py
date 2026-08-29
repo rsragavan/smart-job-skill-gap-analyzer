@@ -12,7 +12,7 @@ class ResumeHistoryService:
         filename,
         skills,
         recommended_jobs
-        , user_id=None, content_hash=None
+        , user_id=None, content_hash=None, ats_analysis=None, storage_path=None
     ):
 
         history = ResumeHistory(
@@ -21,6 +21,8 @@ class ResumeHistoryService:
             recommended_jobs=len(recommended_jobs),
             user_id=user_id,
             content_hash=content_hash,
+            ats_analysis=ats_analysis,
+            storage_path=storage_path,
         )
 
         return self.repository.create(history)

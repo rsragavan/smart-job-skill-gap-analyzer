@@ -8,7 +8,9 @@ import ProtectedRoute from "../components/ProtectedRoute";
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const UploadResume = lazy(() => import("../pages/UploadResume"));
 const Jobs = lazy(() => import("../pages/Jobs"));
-const LearningRoadmap = lazy(() => import("../pages/LearningRoadmap"));
+const Roadmap = lazy(() => import("../pages/Roadmap"));
+const LearningDashboard = lazy(() => import("../pages/LearningDashboard"));
+const CareerGPS = lazy(() => import("../pages/CareerGPS"));
 const ResumeHistory = lazy(() => import("../pages/ResumeHistory"));
 const Analytics = lazy(() => import("../pages/Analytics"));
 const NotFound = lazy(() => import("../pages/NotFound"));
@@ -18,6 +20,10 @@ const Profile = lazy(() => import("../pages/Profile"));
 const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("../pages/ResetPassword"));
 const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
+const TargetCompany = lazy(() => import("../pages/TargetCompany"));
+const ApplicationTracker = lazy(() => import("../pages/ApplicationTracker"));
+const MockInterview = lazy(() => import("../pages/MockInterview"));
+const CodingPractice = lazy(() => import("../pages/CodingPractice"));
 
 export default function AppRoutes() {
     return (
@@ -32,12 +38,20 @@ export default function AppRoutes() {
                 <Route element={<MainLayout />}>
 
                     <Route path="/" element={<Dashboard />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
 
                     <Route path="/upload" element={<UploadResume />} />
 
                     <Route path="/jobs" element={<Jobs />} />
+                    <Route path="/companies" element={<TargetCompany />} />
+                    <Route path="/applications" element={<ApplicationTracker />} />
+                    <Route path="/interviews" element={<MockInterview />} />
+                    <Route path="/coding-practice" element={<CodingPractice />} />
 
-                    <Route path="/learning" element={<LearningRoadmap />} />
+
+                    <Route path="/roadmap" element={<Roadmap />} />
+                    <Route path="/learning" element={<LearningDashboard />} />
+                    <Route path="/career-gps" element={<CareerGPS />} />
 
                     <Route path="/history" element={<ResumeHistory />} />
 

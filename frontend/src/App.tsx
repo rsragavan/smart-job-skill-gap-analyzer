@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { WorkflowProvider } from "./contexts/WorkflowContext";
 import { AuthProvider } from "./contexts/AuthContext";
 
+
 function AppInner() {
     const { mode } = useThemeMode();
     const theme = getTheme(mode);

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.core.security import require_roles
+from app.core.security import get_current_user, require_roles
 from app.db.database import get_db
 from app.models.resume_history import ResumeHistory
 from app.models.user import Role, User
@@ -13,11 +13,11 @@ class ProfileUpdate(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
 
 @router.get("/me/profile")
-def profile(user: User = Depends(require_roles(Role.USER)), db: Session = Depends(get_db)):
+def profile(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return {"id": user.id, "full_name": user.full_name, "email": user.email, "role": user.role.value, "joined_date": user.created_at, "last_login": user.last_login, "uploaded_resume_count": db.query(ResumeHistory).filter_by(user_id=user.id).count()}
 
 @router.patch("/me")
-def update_profile(data: ProfileUpdate, user: User = Depends(require_roles(Role.USER)), db: Session = Depends(get_db)):
+def update_profile(data: ProfileUpdate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     user.full_name = data.full_name.strip(); db.commit(); db.refresh(user)
     return {"id": user.id, "full_name": user.full_name}
 

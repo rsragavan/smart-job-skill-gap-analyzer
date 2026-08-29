@@ -21,3 +21,9 @@ export async function uploadResume(
 
     return response.data;
 }
+
+export async function downloadATSReport(historyId: number, reportType = "ats") {
+    const response = await api.get(`/resume/ats-report/${historyId}/export`, { params: { report_type: reportType }, responseType: "blob" });
+    const url = URL.createObjectURL(response.data);
+    const anchor = document.createElement("a"); anchor.href = url; anchor.download = `${reportType}-${historyId}.pdf`; anchor.click(); URL.revokeObjectURL(url);
+}

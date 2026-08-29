@@ -25,7 +25,11 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False)
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
     password_reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
-
+    applications = relationship(
+        "JobApplication",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
 # Register relationship targets when this model is imported independently.
 from app.models.auth import PasswordResetToken, RefreshToken  # noqa: E402, F401

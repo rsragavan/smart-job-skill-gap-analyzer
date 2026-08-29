@@ -8,7 +8,7 @@ const drawerWidth = 240;
 
 export default function MainLayout() {
     return (
-        <Box sx={{ display: "flex" }}>
+        <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
             <Sidebar />
 
             <Box
@@ -23,7 +23,7 @@ export default function MainLayout() {
 
                 <Toolbar />
 
-                <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1600, mx: "auto" }}>
+                <Box sx={{ p: { xs: 2, sm: 3, lg: 4 }, maxWidth: 1680, mx: "auto", width: "100%" }}>
                     <Outlet />
                 </Box>
             </Box>

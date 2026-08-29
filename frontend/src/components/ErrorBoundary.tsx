@@ -26,7 +26,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
                     <Typography variant="h5" gutterBottom>
                         Something went wrong
                     </Typography>
-                    <Typography color="text.secondary" sx={{ mb: 2 }}>{this.state.error?.message ?? "Please try again."}</Typography>
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>The page could not be displayed. Please try again or return to the dashboard.</Typography>
                     <Button variant="contained" onClick={this.reset}>
                         Try again
                     </Button>

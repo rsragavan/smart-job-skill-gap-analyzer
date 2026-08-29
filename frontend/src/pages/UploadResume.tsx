@@ -15,6 +15,7 @@ import FileUpload from "../components/FileUpload";
 import RecommendedJobCard from "../components/RecommendedJobCard";
 import { uploadResumeService } from "../services/resumeService";
 import type { ResumeResponse } from "../types/resume";
+import ATSReportPanel from "../components/ATSReportPanel";
 
 export default function UploadResume() {
 
@@ -142,6 +143,8 @@ export default function UploadResume() {
                 </Box>
 
             </Box>
+
+            {response?.ats_report && <ATSReportPanel report={response.ats_report} resumeId={response.resume_id} />}
 
             <Snackbar open={openSnackbar} autoHideDuration={5000} onClose={() => setOpenSnackbar(false)}>
                 {error ? (

@@ -1,9 +1,8 @@
-from datetime import datetime,UTC
-
+from datetime import UTC, datetime
 from enum import Enum
 
 from sqlalchemy import DateTime, Enum as SqlEnum, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 
@@ -21,42 +20,44 @@ class Job(Base):
     greenhouse_job_id: Mapped[str] = mapped_column(
         String(100),
         unique=True,
-        nullable=False
+        nullable=False,
     )
 
     title: Mapped[str] = mapped_column(
         String(255),
-        nullable=False
+        nullable=False,
+        index=True,
     )
 
     company: Mapped[str] = mapped_column(
         String(255),
-        nullable=False
+        nullable=False,
+        index=True,
     )
 
     location: Mapped[str] = mapped_column(
         String(255),
-        nullable=False
+        nullable=False,
     )
 
-    department: Mapped[str] = mapped_column(
+    department: Mapped[str | None] = mapped_column(
         String(255),
-        nullable=True
+        nullable=True,
     )
 
-    employment_type: Mapped[str] = mapped_column(
+    employment_type: Mapped[str | None] = mapped_column(
         String(100),
-        nullable=True
+        nullable=True,
     )
 
     description: Mapped[str] = mapped_column(
         Text,
-        nullable=False
+        nullable=False,
     )
 
     url: Mapped[str] = mapped_column(
         String(500),
-        nullable=False
+        nullable=False,
     )
 
     status: Mapped[JobStatus] = mapped_column(
@@ -72,6 +73,14 @@ class Job(Base):
     )
 
     created_at: Mapped[datetime] = mapped_column(
-    DateTime(timezone=True),
-    default=lambda: datetime.now(UTC)
-)
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        nullable=False,
+        index=True,
+    )
+
+    applications: Mapped[list["JobApplication"]] = relationship(
+        back_populates="job",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

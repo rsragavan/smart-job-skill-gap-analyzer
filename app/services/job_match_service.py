@@ -8,40 +8,47 @@ class JobMatchService:
         self.job_extractor = JobSkillExtractor()
         self.gap_service = SkillGapService()
 
-    def match_job(self, resume_skills, job):
+    @staticmethod
+    def _normalize(skill: str) -> str:
+        return " ".join(skill.strip().casefold().split())
 
-        # Extract skills from job description
-        job_skills = self.job_extractor.extract_skills(
-            job.description
+    def match_text(
+        self,
+        resume_skills,
+        description: str,
+        *,
+        company: str,
+        role: str,
+        job_id: int | None = None,
+        location: str | None = None,
+        url: str | None = None,
+    ):
+        job_skills = self.gap_service.normalize_skills(
+            self.job_extractor.extract_skills(description or "")
+            + self.gap_service.extract_target_skills(role, "")
         )
-
-        # Find missing skills
-        missing_skills = self.gap_service.find_missing_skills(
-            resume_skills,
-            job_skills
-        )
-
-        matched_skills = list(
-            set(job_skills) - set(missing_skills)
-        )
-
-        total = len(job_skills)
-
-        if total == 0:
-            percentage = 0
-        else:
-            percentage = round(
-                (len(matched_skills) / total) * 100,
-                2
-            )
+        analysis = self.gap_service.analyze(resume_skills, job_skills, role=role, job_description=description)
 
         return {
-            "job_id": job.id,
-            "job_title": job.title,
-            "company": job.company,
-            "location": job.location,
-            "url": job.url,
-            "match_percentage": percentage,
-            "matched_skills": sorted(matched_skills),
-            "missing_skills": sorted(missing_skills)
+            "job_id": job_id,
+            "job_title": role,
+            "company": company,
+            "location": location,
+            "url": url,
+            "match_percentage": analysis["match_percentage"],
+            "matched_skills": analysis["matched_skills"],
+            "missing_skills": analysis["missing_skills"],
+            "missing_skill_details": analysis["missing_skill_details"],
+            "skill_gap_explanations": analysis["explanations"],
         }
+
+    def match_job(self, resume_skills, job):
+        return self.match_text(
+            resume_skills,
+            job.description,
+            company=job.company,
+            role=job.title,
+            job_id=job.id,
+            location=job.location,
+            url=job.url,
+        )

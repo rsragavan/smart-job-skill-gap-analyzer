@@ -1,160 +1,79 @@
-import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-    Alert, Box, Button, Card, CardContent, Grid, MenuItem, Skeleton, Stack, TextField, Tooltip, Typography,
-} from "@mui/material";
-import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
-import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlined";
-import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
-import PsychologyOutlinedIcon from "@mui/icons-material/PsychologyOutlined";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { Alert, Box, Button, Card, CardContent, Chip, CircularProgress, Grid, Stack, TextField, Typography } from "@mui/material";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
-import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
-import TrendingDownOutlinedIcon from "@mui/icons-material/TrendingDownOutlined";
-import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
-import WorkOutlineIcon from "@mui/icons-material/WorkOutlined";
-
-import { getOverview } from "../api/analyticsApi";
+import { useNavigate } from "react-router-dom";
+import { downloadPlacementReport, getAnalyticsDashboard, getAnalyticsNotifications, getPlacementAnalytics, type AnalyticsDashboard, type AnalyticsNotification, type PlacementAnalytics } from "../api/analyticsApi";
 import { useWorkflow } from "../contexts/WorkflowContext";
 
-const AnalyticsCharts = lazy(() => import("../components/AnalyticsCharts"));
-
-interface AnalyticsData {
-    top_skills?: Record<string, number>;
-    top_companies?: Record<string, number>;
-    jobs_per_company?: Record<string, Array<{ id: number; title: string }>>;
-    average_match_percentage?: number;
-}
-
-type TimeRange = "all" | "last" | "current";
-type SortOption = "highest" | "lowest" | "newest" | "oldest";
+const Charts = lazy(() => import("../components/ProfessionalAnalyticsCharts"));
+const panel = { border: "1px solid", borderColor: "divider", borderRadius: 3, boxShadow: 1 };
 
 export default function Analytics() {
     const navigate = useNavigate();
-    const { learningPlan, roadmapProgress, selectedJob } = useWorkflow();
-    const [data, setData] = useState<AnalyticsData | null>(null);
+    const { activeTarget } = useWorkflow();
+    const [data, setData] = useState<AnalyticsDashboard | null>(null);
+    const [placement, setPlacement] = useState<PlacementAnalytics | null>(null);
+    const [notifications, setNotifications] = useState<AnalyticsNotification[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [timeRange, setTimeRange] = useState<TimeRange>("all");
-    const [sort, setSort] = useState<SortOption>("highest");
-
-    const loadAnalytics = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            setData(await getOverview());
-        } catch (err: unknown) {
-            setData(null);
-            setError(err instanceof Error ? err.message : "We could not load analytics right now.");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const [filters, setFilters] = useState({ company: "", role: "", skill: "", date_from: "", date_to: "" });
+    const [filtersSeeded, setFiltersSeeded] = useState(false);
 
     useEffect(() => {
-        const loadTimer = window.setTimeout(() => { void loadAnalytics(); }, 0);
-        return () => window.clearTimeout(loadTimer);
-    }, [loadAnalytics]);
+        if (filtersSeeded || !activeTarget) return;
+        setFilters((current) => ({
+            ...current,
+            company: current.company || activeTarget.company,
+            role: current.role || activeTarget.role_title,
+        }));
+        setFiltersSeeded(true);
+    }, [activeTarget, filtersSeeded]);
 
-    const analytics = useMemo(() => {
-        const skills = Object.entries(data?.top_skills ?? {}).map(([name, count]) => ({ name, count }));
-        const companies = Object.entries(data?.top_companies ?? {}).map(([name, count]) => ({ name, count }));
-        const companyJobs = Object.entries(data?.jobs_per_company ?? {}).map(([name, jobs]) => ({ name, count: jobs.length }));
-        const totalJobs = companyJobs.reduce((total, company) => total + company.count, 0);
-        const totalExtractedSkills = skills.reduce((total, skill) => total + skill.count, 0);
-        const descending = sort !== "lowest";
-        const byCount = (first: { count: number }, second: { count: number }) => descending ? second.count - first.count : first.count - second.count;
+    const load = useCallback(async () => {
+        setLoading(true); setError(null);
+        try {
+            const [dashboard, placementData, notificationData] = await Promise.all([getAnalyticsDashboard(filters), getPlacementAnalytics(), getAnalyticsNotifications()]);
+            setData(dashboard); setPlacement(placementData); setNotifications(notificationData);
+        } catch (err) { setError(err instanceof Error ? err.message : "Unable to load analytics."); }
+        finally { setLoading(false); }
+    }, [filters]);
+    useEffect(() => {
+        const timer = window.setTimeout(() => { void load(); }, 300);
+        return () => window.clearTimeout(timer);
+    }, [load]);
 
-        return {
-            skills: [...skills].sort(byCount),
-            companies: [...companies].sort(byCount),
-            companyJobs,
-            totalJobs,
-            totalCompanies: companyJobs.length,
-            totalExtractedSkills,
-            averageMatch: data?.average_match_percentage ?? 0,
-        };
-    }, [data, sort]);
-
-    const hasAnalytics = Boolean(data && (analytics.totalJobs > 0 || analytics.skills.length > 0 || analytics.companies.length > 0));
-    const completedRoadmaps = learningPlan && roadmapProgress >= 100 ? 1 : 0;
-    const totalMissingSkills = learningPlan?.total_missing_skills;
-    const filterNote = timeRange === "all" ? null : "The analytics endpoint provides an all-time overview only; this view remains based on the available overview data.";
-
-    const exportCsv = useCallback(() => {
-        if (!data) return;
-        const rows = [
-            ["Metric", "Value"],
-            ["Total jobs", String(analytics.totalJobs)],
-            ["Total companies", String(analytics.totalCompanies)],
-            ["Total extracted skills (top skills)", String(analytics.totalExtractedSkills)],
-            ["Average resume match percentage", String(analytics.averageMatch)],
-            [],
-            ["Top required skill", "Frequency"],
-            ...analytics.skills.map((skill) => [skill.name, String(skill.count)]),
-            [],
-            ["Top company", "Job count"],
-            ...analytics.companies.map((company) => [company.name, String(company.count)]),
-        ];
-        const csv = rows.map((row) => row.map((value) => `"${value.replaceAll("\"", "\"\"")}"`).join(",")).join("\n");
-        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = "skill-gap-analytics.csv";
-        anchor.click();
-        URL.revokeObjectURL(url);
-    }, [analytics, data]);
-
+    const setFilter = (key: keyof typeof filters, value: string) => setFilters((current) => ({ ...current, [key]: value }));
     return <Stack spacing={3}>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ justifyContent: "space-between", alignItems: { sm: "center" } }}>
-            <Box><Typography variant="h4" sx={{ fontWeight: 700 }}>Analytics Dashboard</Typography><Typography color="text.secondary" sx={{ mt: 0.5 }}>Insights from uploaded resumes and job market analysis.</Typography></Box>
-            <Button variant="outlined" startIcon={<RefreshOutlinedIcon />} onClick={() => void loadAnalytics()} disabled={loading}>Refresh</Button>
-        </Stack>
-
-        <Grid container spacing={2}>
-            <KpiCard icon={<WorkOutlineIcon />} title="Total Jobs" value={analytics.totalJobs} description="Jobs currently included in analysis" trend="Available job records" loading={loading} />
-            <KpiCard icon={<BusinessOutlinedIcon />} title="Total Companies" value={analytics.totalCompanies} description="Companies represented in job data" trend="Company coverage" loading={loading} />
-            <KpiCard icon={<PsychologyOutlinedIcon />} title="Total Skills Extracted" value={analytics.totalExtractedSkills} description="Frequency across reported top skills" trend="Top skills dataset" loading={loading} />
-            <KpiCard icon={<AssessmentOutlinedIcon />} title="Average Resume Match %" value={`${analytics.averageMatch}%`} description="Latest resume against available jobs" trend="Latest resume analysis" loading={loading} />
-            <KpiCard icon={<WorkOutlineIcon />} title="Selected Job" value={selectedJob?.title ?? "None"} description={selectedJob ? selectedJob.company : "Choose a job to begin a roadmap"} trend={selectedJob ? "Current workflow" : "No job selected"} loading={loading} textValue />
-            <KpiCard icon={<CheckCircleOutlineIcon />} title="Completed Roadmaps" value={completedRoadmaps} description="Completed in the current session" trend={learningPlan ? `${roadmapProgress}% current progress` : "No active roadmap"} loading={loading} />
-        </Grid>
-
-        <Card elevation={0} sx={panelSx}><CardContent><Stack direction={{ xs: "column", md: "row" }} spacing={1.5}><TextField select size="small" label="Time Range" value={timeRange} onChange={(event) => setTimeRange(event.target.value as TimeRange)} sx={{ minWidth: { md: 180 } }}><MenuItem value="all">All Time</MenuItem><MenuItem value="last">Last Upload</MenuItem><MenuItem value="current">Current Resume</MenuItem></TextField><TextField select size="small" label="Sort" value={sort} onChange={(event) => setSort(event.target.value as SortOption)} sx={{ minWidth: { md: 180 } }}><MenuItem value="highest">Highest Match</MenuItem><MenuItem value="lowest">Lowest Match</MenuItem><MenuItem value="newest">Newest</MenuItem><MenuItem value="oldest">Oldest</MenuItem></TextField></Stack>{filterNote && <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>{filterNote}</Typography>}</CardContent></Card>
-
-        {error && <Alert severity="error" action={<Button color="inherit" size="small" onClick={() => void loadAnalytics()}>Retry</Button>}>{error}</Alert>}
-
-        {loading ? <AnalyticsSkeletons /> : !hasAnalytics ? <EmptyAnalytics onUpload={() => navigate("/upload")} /> : <>
-            <Suspense fallback={<ChartSkeletons />}><AnalyticsCharts skills={analytics.skills} companies={analytics.companies} roadmapProgress={learningPlan ? roadmapProgress : null} /></Suspense>
-            <Insights skills={analytics.skills} companies={analytics.companies} averageMatch={analytics.averageMatch} missingSkills={totalMissingSkills} />
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} useFlexGap sx={{ flexWrap: "wrap" }}><Button variant="outlined" startIcon={<DownloadOutlinedIcon />} onClick={() => window.print()} disabled={!hasAnalytics}>Export PDF</Button><Button variant="outlined" startIcon={<DownloadOutlinedIcon />} onClick={exportCsv} disabled={!hasAnalytics}>Export CSV</Button><Button variant="contained" startIcon={<RefreshOutlinedIcon />} onClick={() => void loadAnalytics()} disabled={loading || !hasAnalytics}>Refresh Analytics</Button></Stack>
-        </>}
+        <Stack direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", gap: 2, alignItems: { sm: "center" } }}><Box><Typography variant="h4" sx={{ fontWeight: 700 }}>Analytics Dashboard</Typography><Typography color="text.secondary">One source of truth for resume, job market, learning, roadmap, career, and XP analytics.</Typography></Box><Button variant="outlined" startIcon={<RefreshOutlinedIcon />} onClick={() => void load()} disabled={loading}>Refresh</Button></Stack>
+        {activeTarget && (
+            <Alert severity="info">
+                Filters defaulted from active target: <strong>{activeTarget.company}</strong> · {activeTarget.role_title}
+            </Alert>
+        )}
+        <Card sx={panel}><CardContent><Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}><TextField size="small" label="Company" value={filters.company} onChange={(event) => setFilter("company", event.target.value)} /><TextField size="small" label="Role" value={filters.role} onChange={(event) => setFilter("role", event.target.value)} /><TextField size="small" label="Skill" value={filters.skill} onChange={(event) => setFilter("skill", event.target.value)} /><TextField size="small" type="date" label="From" InputLabelProps={{ shrink: true }} value={filters.date_from} onChange={(event) => setFilter("date_from", event.target.value)} /><TextField size="small" type="date" label="To" InputLabelProps={{ shrink: true }} value={filters.date_to} onChange={(event) => setFilter("date_to", event.target.value)} /></Stack></CardContent></Card>
+        {error && <Alert severity="error" action={<Button color="inherit" onClick={() => void load()}>Retry</Button>}>{error}</Alert>}
+        {loading && !data ? <Box sx={{ minHeight: 350, display: "grid", placeItems: "center" }}><CircularProgress /></Box> : data ? <>
+            <Grid container spacing={2}>{[
+                ["Resume Statistics", `${data.resume_statistics.uploads} uploads · ${data.resume_statistics.skills} skills`], ["Job Statistics", `${data.job_statistics.jobs} jobs · ${data.job_statistics.companies} companies`], ["Skill Match %", `${data.skill_statistics.match_percentage}%`], ["Learning Statistics", `${data.learning_statistics.progress}% complete`], ["Roadmap Statistics", `${data.roadmap_statistics.completed_skills}/${data.roadmap_statistics.skills} skills`], ["Career Statistics", `${data.career_statistics.readiness}% readiness`], ["XP Statistics", `${data.xp_statistics.total} XP · Level ${data.xp_statistics.level}`], ["Badge Statistics", `${data.badge_statistics.unlocked} badges · ${data.badge_statistics.achievements} achievements`], ["Mission Statistics", `${data.mission_statistics.completed}/${data.mission_statistics.total} completed`],
+            ].map(([title, value]) => <Grid key={title} size={{ xs: 12, sm: 6, lg: 4 }}><Card sx={{ ...panel, height: "100%" }}><CardContent><Typography color="text.secondary">{title}</Typography><Typography variant="h5" sx={{ mt: 1, fontWeight: 700 }}>{value}</Typography></CardContent></Card></Grid>)}</Grid>
+            <Card sx={panel}><CardContent><Typography variant="h6" gutterBottom>Matched and Missing Skills</Typography><Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}><Chip color="success" label={`${data.skill_statistics.matched.length} matched`} />{data.skill_statistics.missing.slice(0, 8).map((skill) => <Chip key={skill} color="warning" variant="outlined" label={skill} />)}</Stack></CardContent></Card>
+            {placement && <>
+                <Stack direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, gap: 2 }}>
+                    <Box><Typography variant="h5" sx={{ fontWeight: 700 }}>Placement Analytics</Typography><Typography color="text.secondary">Personalized readiness, applications, company fit, interviews, and next actions.</Typography></Box>
+                    <Stack direction="row" spacing={1} flexWrap="wrap"><Button size="small" variant="outlined" onClick={() => void downloadPlacementReport("placement")}>PDF report</Button><Button size="small" variant="outlined" onClick={() => void downloadPlacementReport("skill")}>Skills PDF</Button></Stack>
+                </Stack>
+                {notifications.length > 0 && <Stack spacing={1}>{notifications.map((item) => <Alert key={`${item.type}-${item.title}`} severity={item.severity}>{item.title}: {item.detail}</Alert>)}</Stack>}
+                <Grid container spacing={2}>{Object.entries({ Overall: placement.readiness.overall, Company: placement.readiness.company, Interview: placement.readiness.interview, Coding: placement.readiness.coding, Resume: placement.readiness.resume, Communication: placement.readiness.communication, Learning: placement.readiness.learning }).map(([label, value]) => <Grid key={label} size={{ xs: 6, sm: 3, md: 1.7 }}><Card sx={{ ...panel, height: "100%" }}><CardContent><Typography color="text.secondary" variant="body2">{label}</Typography><Typography variant="h5" sx={{ mt: 1, fontWeight: 700 }}>{value}%</Typography></CardContent></Card></Grid>)}</Grid>
+                <Grid container spacing={2}>{[
+                    ["Applications", `${placement.applications.submitted} submitted`, `${placement.applications.response_rate}% response`], ["Offers", `${placement.applications.offers}`, `${placement.applications.offer_rate}% offer rate`], ["Interviews", `${placement.interviews.completed}/${placement.interviews.mock_interviews} completed`, `${placement.interviews.average_score}% average`], ["Learning", `${placement.skills.learning_progress}% complete`, `${placement.skills.missing.length} market gaps`],
+                ].map(([title, value, detail]) => <Grid key={title} size={{ xs: 12, sm: 6, md: 3 }}><Card sx={{ ...panel, height: "100%" }}><CardContent><Typography color="text.secondary">{title}</Typography><Typography variant="h5" sx={{ mt: 1, fontWeight: 700 }}>{value}</Typography><Typography variant="body2" color="text.secondary">{detail}</Typography></CardContent></Card></Grid>)}</Grid>
+                <Grid container spacing={2}>{[
+                    ["Top hiring", placement.companies.top_hiring.map(([name, count]) => `${name} (${count})`)], ["Most requested skills", placement.skills.most_requested.map(([name, count]) => `${name} (${count})`)], ["Strong skills", placement.skills.strong], ["Missing skills", placement.skills.missing], ["Remote-friendly", placement.companies.remote_friendly], ["Interview focus", placement.interviews.weak_areas],
+                ].map(([title, values]) => <Grid key={String(title)} size={{ xs: 12, sm: 6, md: 4 }}><Card sx={{ ...panel, height: "100%" }}><CardContent><Typography variant="h6" gutterBottom>{String(title)}</Typography><Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}>{(values as string[]).length ? (values as string[]).slice(0, 8).map((value) => <Chip key={value} label={value} size="small" variant="outlined" />) : <Typography color="text.secondary">No verified data yet.</Typography>}</Stack></CardContent></Card></Grid>)}</Grid>
+                <Card sx={panel}><CardContent><Typography variant="h6" gutterBottom>Recommendations</Typography><Stack spacing={1}>{[...placement.recommendations.skills.map((item) => `Learn ${item.skill}: ${item.reason}`), ...placement.recommendations.mock_interviews.map((item) => `Practice ${item.type}: ${item.reason}`), ...placement.recommendations.coding_practice.map((item) => `Code ${item.topic}: ${item.reason}`)].slice(0, 8).map((item) => <Typography key={item} variant="body2">• {item}</Typography>)}</Stack></CardContent></Card>
+            </>}
+            <Suspense fallback={<CircularProgress />}><Charts data={data} /></Suspense>
+        </> : <Card sx={panel}><CardContent sx={{ textAlign: "center", py: 8 }}><Typography variant="h6">No analytics available</Typography><Typography color="text.secondary" sx={{ mt: 1 }}>Upload a resume and begin a roadmap to generate analytics.</Typography><Button variant="contained" startIcon={<UploadFileOutlinedIcon />} sx={{ mt: 2 }} onClick={() => navigate("/upload")}>Upload Resume</Button></CardContent></Card>}
     </Stack>;
 }
-
-const panelSx = { border: "1px solid", borderColor: "divider", borderRadius: 3, boxShadow: 1 };
-
-const KpiCard = memo(function KpiCard({ icon, title, value, description, trend, loading, textValue = false }: { icon: ReactNode; title: string; value: string | number; description: string; trend: string; loading: boolean; textValue?: boolean }) {
-    return <Grid size={{ xs: 12, sm: 6, lg: 4 }}><Card elevation={0} sx={{ ...panelSx, height: "100%", transition: "transform 160ms ease, box-shadow 160ms ease", "&:hover": { transform: "translateY(-4px)", boxShadow: 4 } }}><CardContent><Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}><Box sx={{ display: "grid", placeItems: "center", p: 1, borderRadius: 2, color: "primary.main", bgcolor: "primary.50" }}>{icon}</Box><Typography variant="body2" color="text.secondary">{title}</Typography></Stack>{loading ? <Skeleton width="60%" height={48} /> : <Tooltip title={String(value)}><Typography variant={textValue ? "h6" : "h4"} noWrap sx={{ mt: 2, fontWeight: 700 }}>{value}</Typography></Tooltip>}<Typography variant="body2" color="text.secondary" noWrap sx={{ mt: 0.5 }}>{description}</Typography><Stack direction="row" spacing={0.5} sx={{ alignItems: "center", mt: 1.25, color: "text.secondary" }}><TrendingUpOutlinedIcon fontSize="inherit" /><Typography variant="caption">{trend}</Typography></Stack></CardContent></Card></Grid>;
-});
-
-function Insights({ skills, companies, averageMatch, missingSkills }: { skills: Array<{ name: string; count: number }>; companies: Array<{ name: string; count: number }>; averageMatch: number; missingSkills: number | undefined }) {
-    const insights = [
-        { icon: <TrendingUpOutlinedIcon color="success" />, label: "Most demanded skill", value: skills[0]?.name ?? "Not available" },
-        { icon: <BusinessOutlinedIcon color="primary" />, label: "Highest matching company", value: "Not available from analytics data" },
-        { icon: <TrendingDownOutlinedIcon color="warning" />, label: "Lowest matching skill", value: "Not available from analytics data" },
-        { icon: <AssessmentOutlinedIcon color="primary" />, label: "Average resume match", value: `${averageMatch}%` },
-        { icon: <SchoolOutlinedIcon color="error" />, label: "Total missing skills", value: missingSkills === undefined ? "Not available" : String(missingSkills) },
-        { icon: <PsychologyOutlinedIcon color="success" />, label: "Strongest resume", value: "Not available from analytics data" },
-        { icon: <PsychologyOutlinedIcon color="warning" />, label: "Weakest resume", value: "Not available from analytics data" },
-        { icon: <BusinessOutlinedIcon color="primary" />, label: "Most represented company", value: companies[0]?.name ?? "Not available" },
-    ];
-    return <Card elevation={0} sx={panelSx}><CardContent><Typography variant="h6" sx={{ fontWeight: 700 }}>Insights</Typography><Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>What the available analytics data shows.</Typography><Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, gap: 2, mt: 2.5 }}>{insights.map((insight) => <Stack key={insight.label} direction="row" spacing={1} sx={{ minWidth: 0, alignItems: "center" }}>{insight.icon}<Box sx={{ minWidth: 0 }}><Typography variant="caption" color="text.secondary">{insight.label}</Typography><Typography variant="body2" noWrap sx={{ fontWeight: 600 }} title={insight.value}>{insight.value}</Typography></Box></Stack>)}</Box></CardContent></Card>;
-}
-
-function EmptyAnalytics({ onUpload }: { onUpload: () => void }) { return <Card elevation={0} sx={{ ...panelSx, borderStyle: "dashed" }}><CardContent sx={{ py: 7, textAlign: "center" }}><AssessmentOutlinedIcon color="primary" sx={{ fontSize: 52 }} /><Typography variant="h6" sx={{ mt: 1.5, fontWeight: 700 }}>No analytics available.</Typography><Typography color="text.secondary" sx={{ mt: 0.75 }}>Upload a resume and add jobs to generate useful analytics.</Typography><Button variant="contained" startIcon={<UploadFileOutlinedIcon />} sx={{ mt: 2.5 }} onClick={onUpload}>Upload Resume</Button></CardContent></Card>; }
-
-function ChartSkeletons() { return <Grid container spacing={2.5}>{Array.from({ length: 6 }, (_, index) => <Grid key={index} size={{ xs: 12, md: 6 }}><Skeleton variant="rounded" height={330} /></Grid>)}</Grid>; }
-function AnalyticsSkeletons() { return <><ChartSkeletons /><Skeleton variant="rounded" height={180} /></>; }

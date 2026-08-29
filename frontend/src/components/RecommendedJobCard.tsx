@@ -9,6 +9,7 @@ import {
     Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import type { RecommendedJob } from "../types/resume";
 import { useWorkflow } from "../contexts/WorkflowContext";
 
@@ -18,20 +19,25 @@ interface Props {
 
 export default function RecommendedJobCard({ job }: Props) {
     const navigate = useNavigate();
-    const { selectJob } = useWorkflow();
+    const { selectScrapedTarget } = useWorkflow();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleViewJob = () => {
         window.open(job.url, "_blank");
     };
 
-    const handleGenerateRoadmap = () => {
-        selectJob({
-            id: job.job_id,
-            title: job.job_title,
-            company: job.company,
-            location: job.location,
-        });
-        navigate("/learning");
+    const handleGenerateRoadmap = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const { roadmap } = await selectScrapedTarget(job.job_id);
+            navigate("/learning", { state: roadmap });
+        } catch (requestError) {
+            setError(requestError instanceof Error ? requestError.message : "Could not generate the learning roadmap.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -88,17 +94,21 @@ export default function RecommendedJobCard({ job }: Props) {
                     ))}
                 </Stack>
 
-                <Box sx={{ mt: 2, display: "flex", gap: 1, justifyContent: "flex-end" }}>
-                    <Button size="small" variant="outlined" onClick={handleViewJob}>
+                {error && (
+                    <Typography color="error" variant="caption" display="block" sx={{ mb: 1 }}>
+                        {error}
+                    </Typography>
+                )}
+
+                <Stack direction="row" spacing={1}>
+                    <Button size="small" onClick={handleViewJob}>
                         View Job
                     </Button>
-                    <Button size="small" variant="contained" onClick={handleGenerateRoadmap}>
-                        Generate Roadmap
+                    <Button size="small" variant="contained" disabled={loading} onClick={() => void handleGenerateRoadmap()}>
+                        {loading ? "Preparing…" : "Set Target & Learn"}
                     </Button>
-                </Box>
+                </Stack>
             </CardContent>
         </Card>
     );
 }
-
-

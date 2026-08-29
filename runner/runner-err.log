@@ -1,0 +1,10 @@
+INFO:     Started server process [16364]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8090 (Press CTRL+C to quit)
+Sandbox execution failed
+Traceback (most recent call last):
+  File "C:\Users\rsrag\PycharmProjects\smart-job-skill-gap-analyzer\runner\app.py", line 102, in _run_one
+    socket._sock.sendall(stdin.encode("utf-8"))
+    ^^^^^^^^^^^^
+AttributeError: 'NpipeSocket' object has no attribute '_sock'

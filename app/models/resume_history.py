@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.database import Base
@@ -16,6 +16,8 @@ class ResumeHistory(Base):
     )
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=True)
     content_hash: Mapped[str | None] = mapped_column(String(64), index=True, nullable=True)
+    ats_analysis: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    storage_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     filename: Mapped[str] = mapped_column(
         String(255),
